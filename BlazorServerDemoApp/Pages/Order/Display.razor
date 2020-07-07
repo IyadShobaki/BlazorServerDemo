@@ -2,6 +2,7 @@
 <!-- if you want the id to be optional add at-page"/Order/Display"-->
 @inject IFoodData foodData
 @inject IOrderData orderData
+@using BlazorServerDemoApp.Models
 
 <h3>Display</h3>
 
@@ -35,6 +36,18 @@ else
             </tr>
         </tbody>
     </table>
+    <EditForm Model="@updateModel" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary Model="@updateModel" />
+        <div class="form-group">
+            <label class="control-label">Name for the Order</label>
+            <InputText @bind-Value="updateModel.OrderName" class="form-control" />
+            <ValidationMessage For="@(() => updateModel.OrderName)" class="text-danger" />
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Update Order Name" class="btn btn-primary" />
+        </div>
+    </EditForm>
 }
 
 @code {
@@ -43,6 +56,7 @@ else
 
     private OrderModel order;
     private string itemPurchased;
+    private OrderUpdateModel updateModel = new OrderUpdateModel();
 
     protected override async Task OnInitializedAsync()
     {
@@ -54,6 +68,16 @@ else
 
             itemPurchased = food.Where(x => x.Id == order.FoodId)
                                 .FirstOrDefault()?.Title;
+
+            updateModel.Id = order.Id;
+            updateModel.OrderName = order.OrderName;
         }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await orderData.UpdateOrderName(updateModel.Id, updateModel.OrderName);
+        // instead of send it to the databse and return it back
+        order.OrderName = updateModel.OrderName;
     }
 }
